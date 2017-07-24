@@ -72,11 +72,6 @@ do
     fi
 done < <(env)
 
-# configuring system settings
-# https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-system-settings.html#limits.conf
-# https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-configuration-memory.html
-ulimit -n 65536
-ulimit -l unlimited
 # The virtual file /proc/self/cgroup should list the current cgroup
 # membership. For each hierarchy, you can follow the cgroup path from
 # this file to the cgroup filesystem (usually /sys/fs/cgroup/) and
