@@ -8,7 +8,7 @@ RUN yum install -y bind-utils
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-system-settings.html#limits.conf
 RUN ulimit -n 65536
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-configuration-memory.html
-# RUN ulimit -l unlimited
+CMD ["ulimit", "-l", "unlimited"]
 
 COPY es-docker /usr/share/elasticsearch/bin/
 USER elasticsearch
