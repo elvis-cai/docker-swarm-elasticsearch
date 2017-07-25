@@ -22,9 +22,30 @@ docker network create --driver overlay --subnet 10.0.10.0/24 \
 docker service create --name elasticsearch --network=elastic_cluster \
   --replicas 3 \
   --env SERVICE_NAME=elasticsearch \
+  --env bootstrap.memory_lock=true \
+  --env "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:-AssumeMP" \
   --publish 9200:9200 \
+  --publish 9300:9300 \
   youngbe/docker-swarm-elasticsearch:5.5.0
 ```
+
+
+If you encountered "-XX:ParallelGCThreads=N" error and stop elasticsearch service, this is because some JavaSDK with -XX:+AssumeMP enabled by default. So, you should turn it off. Reference [issue](https://github.com/elastic/elasticsearch/issues/22245)
+
+
+"bootstrap.memory_lock=true" Production mode need to lock memory to avoid elasticsearch swap to file. It's will cause performance issue. If you encountered memory lock issue in developing, set "bootstrap.memory_lock=false".
+
+
+Because [elasticsearch docker production mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode) requires:
+   * vm.max_map_count=262144
+   * elasticsearch using uid:gid 1000:1000
+   * ulimit for /etc/security/limits.conf
+      * nofile  65536 (open file)
+      * nproc   65535 (process thread)
+      * memlock unlimited (max memory lock)
+
+You need to setup it BEFORE Docker service up. On CentOS7.0, you can reference the script: es-require-on-host.sh.
+
 
 Since elasticsearch requires vm.max_map_count to be at least 262144 but docker service create does not support sysctl management you have to set 
 vm.max_map_count on all your nodes to proper value BEFORE starting service.
