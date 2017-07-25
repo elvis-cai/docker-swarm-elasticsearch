@@ -27,25 +27,34 @@ docker service create --name elasticsearch --network=elastic_cluster \
   --publish 9200:9200 \
   --publish 9300:9300 \
   youngbe/docker-swarm-elasticsearch:5.5.0
+
+docker service create --name kibana --network=elastic_cluster \
+  --replicas 1 \
+  --env ELASTICSEARCH_URL="http://192.168.100.20:9200" \
+  --publish 5601:5601 \
+  docker.elastic.co/kibana/kibana:5.5.0
 ```
 
+After started, you can go to http://192.168.100.20:5601/ to see the kibana and connect to elasticsearch cluster http://192.168.100.20:9200.
 
+## Parameters
+
+* "-XX:-AssumeMP" :
 If you encountered "-XX:ParallelGCThreads=N" error and stop elasticsearch service, this is because some JavaSDK with -XX:+AssumeMP enabled by default. So, you should turn it off. Reference [issue](https://github.com/elastic/elasticsearch/issues/22245)
 
+* "bootstrap.memory_lock=true" :
+Production mode need to lock memory to avoid elasticsearch swap to file. It's will cause performance issue. If you encountered memory lock issue in developing, set "bootstrap.memory_lock=false".
 
-"bootstrap.memory_lock=true" Production mode need to lock memory to avoid elasticsearch swap to file. It's will cause performance issue. If you encountered memory lock issue in developing, set "bootstrap.memory_lock=false".
-
-
-Because [elasticsearch docker production mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode) requires:
-   * vm.max_map_count=262144
-   * elasticsearch using uid:gid 1000:1000
-   * ulimit for /etc/security/limits.conf
-      * nofile  65536 (open file)
-      * nproc   65535 (process thread)
-      * memlock unlimited (max memory lock)
+* production mode: max_map_count and ulimit
+[elasticsearch docker production mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode) requires:
+    * vm.max_map_count=262144
+    * elasticsearch using uid:gid 1000:1000
+    * ulimit for /etc/security/limits.conf
+        * nofile  65536 (open file)
+        * nproc   65535 (process thread)
+        * memlock unlimited (max memory lock)
 
 You need to setup it BEFORE Docker service up. On CentOS7.0, you can reference the script: es-require-on-host.sh.
-
 
 Since elasticsearch requires vm.max_map_count to be at least 262144 but docker service create does not support sysctl management you have to set 
 vm.max_map_count on all your nodes to proper value BEFORE starting service.
