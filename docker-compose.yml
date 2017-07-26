@@ -3,7 +3,8 @@ services:
   elasticsearch:
     image: youngbe/docker-swarm-elasticsearch:5.5.0
     environment:
-      - cluster.name=elasticsearch
+      - SERVICE_NAME=elasticsearch
+      - cluster.name=elasticsearch-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:-AssumeMP"
     ports:
@@ -27,7 +28,7 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      ELASTICSEARCH_URL: http://elastic_cluster:9200
+      ELASTICSEARCH_URL: http://192.168.100.20:9200
 
 networks:
   elastic_cluster:
