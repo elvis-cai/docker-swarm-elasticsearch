@@ -11,9 +11,10 @@ Automatically configures elasticsearch to connect other nodes inside docker swar
 ## Test and run
 - gitclone this repo and go to clone folder
 - run `vagrant up` then you will get a docker swarm environment
-- run `vagrant ssh elastic2`
-    - `sudo su docker; cd ~;`
-    - `docker stack deploy --compose-file docker-compose.yml elasticsearch`
+- run `vagrant ssh elastic0`
+    - `sudo -u docker docker stack deploy --compose-file /vagrant/docker-compose.yml elasticsearch`
+- check the service: `sudo -u docker docker service ls`
+- remove the stack: `sudo -u docker docker stack rm elasticsearch`
 
 ## Affects elasticsearch parameters:
 
