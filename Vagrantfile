@@ -32,7 +32,7 @@ $script = <<SCRIPT
   ## elasticsearch configuration
   ## https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
   mkdir -p /etc/security/limits.d
-  echo "# elastichsearch 5.5.0 configuration" >> /etc/security/limits.d/10-elasticsearch.conf
+  echo "# elasticsearch 5.5.0 configuration" >> /etc/security/limits.d/10-elasticsearch.conf
   echo "* soft nproc 65535" >> /etc/security/limits.d/10-elasticsearch.conf
   echo "* hard nproc 65535" >> /etc/security/limits.d/10-elasticsearch.conf
   echo "* soft nofile 65535" >> /etc/security/limits.d/10-elasticsearch.conf
@@ -54,14 +54,14 @@ $script = <<SCRIPT
   groupadd -f -g 1000 elasticsearch && useradd elasticsearch -ou 1000 -g 1000
 
   ## data folder
-  if [! -d "/vagrant/data"]; then
+  if [ ! -d "/vagrant/data" ]; then
     mkdir -p /vagrant/data
     chown -R elasticsearch:elasticsearch /vagrant/data
   fi
   
   ## start docker daemon
   systemctl daemon-reload
-  systemctl start docker
+  systemctl restart docker
 
   ## join docker swarm
   if [ "$(hostname)" == "elastic0" ];then
