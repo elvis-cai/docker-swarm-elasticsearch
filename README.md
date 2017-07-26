@@ -2,9 +2,20 @@ Docker Swarm support for elasticsearch
 ======================================
 
 Automatically configures elasticsearch to connect other nodes inside docker swarm cluster.
-------------------------------------------------------------------------------------------
 
-Affects elasticsearch parameters:
+## Prerequisites
+
+- setup [virtual box](https://www.virtualbox.org/)
+- setup [Vagrant](https://www.vagrantup.com/downloads.html) in your mac os / windows
+
+## Test and run
+- gitclone this repo and go to clone folder
+- run `vagrant up` then you will get a docker swarm environment
+- run `vagrant ssh elastic2`
+    - `sudo su docker; cd ~;`
+    - `docker stack deploy --compose-file docker-compose.yml elasticsearch`
+
+## Affects elasticsearch parameters:
 
 - `network.host` - an IP address of the container
 - `network.publish_host` - an IP address of the container
