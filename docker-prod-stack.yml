@@ -9,6 +9,8 @@ services:
       - node.master=true
       - node.data=false
       - node.ingest=false
+      # https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#split-brain
+      - discovery.zen.minimum_master_nodes=2
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:-AssumeMP"
     ports:
       - 9200:9200
