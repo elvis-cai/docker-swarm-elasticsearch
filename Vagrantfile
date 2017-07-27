@@ -32,13 +32,16 @@ $script = <<SCRIPT
   ## elasticsearch configuration
   ## https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
   mkdir -p /etc/security/limits.d
-  echo "# elasticsearch 5.5.0 configuration" >> /etc/security/limits.d/10-elasticsearch.conf
-  echo "* soft nproc 65535" >> /etc/security/limits.d/10-elasticsearch.conf
-  echo "* hard nproc 65535" >> /etc/security/limits.d/10-elasticsearch.conf
-  echo "* soft nofile 65535" >> /etc/security/limits.d/10-elasticsearch.conf
-  echo "* hard nofile 65535" >> /etc/security/limits.d/10-elasticsearch.conf
-  echo "* soft memlock unlimited" >> /etc/security/limits.d/10-elasticsearch.conf
-  echo "* hard memlock unlimited" >> /etc/security/limits.d/10-elasticsearch.conf
+  echo "# elasticsearch 5.5.0 configuration" >> /etc/security/limits.d/zz-elastic-limits.conf
+  echo "* soft nproc 65535" >> /etc/security/limits.d/zz-elastic-limits.conf
+  echo "* hard nproc 65535" >> /etc/security/limits.d/zz-elastic-limits.conf
+  echo "* soft nofile 65535" >> /etc/security/limits.d/zz-elastic-limits.conf
+  echo "* hard nofile 65535" >> /etc/security/limits.d/zz-elastic-limits.conf
+  echo "* soft memlock unlimited" >> /etc/security/limits.d/zz-elastic-limits.conf
+  echo "* hard memlock unlimited" >> /etc/security/limits.d/zz-elastic-limits.conf
+  mkdir -p /etc/sysctl.d/
+  echo "# elasticsearch 5.5.0 configuration" >> /etc/sysctl.d/zz-elastic-sysctl.conf
+  echo "vm.max_map_count=262144" >> /etc/sysctl.d/zz-elastic-sysctl.conf
   sysctl -w vm.max_map_count=262144
   ulimit -n 65535
   ulimit -l unlimited
@@ -63,6 +66,9 @@ $script = <<SCRIPT
   systemctl daemon-reload
   systemctl restart docker
 
+  ## Configure Docker to start on boot
+  systemctl enable docker
+
   ## join docker swarm
   if [ "$(hostname)" == "elastic0" ];then
     docker swarm init --advertise-addr=192.168.100.20
@@ -73,9 +79,6 @@ $script = <<SCRIPT
   fi
   if [ "$(hostname)" == "elastic2" ];then
     docker swarm join --token $(cat /vagrant/token) --advertise-addr=192.168.100.22 192.168.100.20:2377
-    ## docker-compose file
-    cp /vagrant/docker-compose.yml /home/docker/docker-compose.yml
-    chown -R docker:docker /home/docker/docker-compose.yml
   fi
 SCRIPT
 
