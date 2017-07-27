@@ -12,8 +12,9 @@ Automatically configures elasticsearch to connect other nodes inside docker swar
 - gitclone this repo and go to clone folder
 - run `vagrant up` then you will get a docker swarm environment
 - run `vagrant ssh elastic0`
-    - `sudo -u docker docker stack deploy --compose-file /vagrant/docker-compose.yml elasticsearch`
+    - `sudo -u docker docker stack deploy --compose-file /vagrant/docker-prod-stack.yml elasticsearch`
 - check the service: `sudo -u docker docker service ls`
+- go to http://192.168.100.20:5601/ to see kibana. user/pass is elastic/changeme.
 - remove the stack: `sudo -u docker docker stack rm elasticsearch`
 
 ## Affects elasticsearch parameters:
