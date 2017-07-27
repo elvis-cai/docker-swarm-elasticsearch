@@ -9,14 +9,15 @@ services:
       - node.master=true
       - node.data=false
       - node.ingest=false
+      # - xpack.security.enabled=false
       # https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#split-brain
       - discovery.zen.minimum_master_nodes=2
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:-AssumeMP"
+    networks:
+      - elastic_cluster
     ports:
       - 9200:9200
       - 9300:9300
-    networks:
-      - elastic_cluster
     deploy:
       mode: replicated
       replicas: 3
@@ -34,6 +35,7 @@ services:
       - node.data=true
       - node.ingest=true
       - node.max_local_storage_nodes=5
+      # - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:-AssumeMP"
     volumes:
       - /vagrant/data:/usr/share/elasticsearch/data
