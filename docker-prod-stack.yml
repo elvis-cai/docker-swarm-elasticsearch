@@ -13,11 +13,10 @@ services:
       # https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#split-brain
       - discovery.zen.minimum_master_nodes=2
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:-AssumeMP"
+    volumes:
+      - /vagrant/plugins/ik:/usr/share/elasticsearch/plugins/ik
     networks:
       - elastic_cluster
-    ports:
-      - 9200:9200
-      - 9300:9300
     deploy:
       mode: replicated
       replicas: 3
@@ -39,8 +38,12 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:-AssumeMP"
     volumes:
       - /vagrant/data:/usr/share/elasticsearch/data
+      - /vagrant/plugins/ik:/usr/share/elasticsearch/plugins/ik
     networks:
       - elastic_cluster
+    ports:
+      - 9200:9200
+      - 9300:9300
     deploy:
       mode: replicated
       replicas: 2

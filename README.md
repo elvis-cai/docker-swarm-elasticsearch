@@ -72,6 +72,21 @@ Since elasticsearch requires vm.max_map_count to be at least 262144 but docker s
 vm.max_map_count on all your nodes to proper value BEFORE starting service.
 On Linux Ubuntu: `sysctl -w "vm.max_map_count=262144"`. Or `echo "vm.max_map_count=262144" >> /etc/sysctl.conf` to set it permanently.
 
+## Search Chinese
+
+* run `curl --user elastic:changeme -XPUT "http://192.168.100.20:9200/product" -H 'Content-Type: application/json' -d @./product_mapping.json;echo`
+
+* run `curl --user elastic:changeme -XPOST "http://192.168.100.20:9200/_bulk" -H 'Content-Type: application/json' --data-binary @./productsData.json;echo`
+
+* in kibana devtool run 
+`GET product/goods/_search
+{
+  "query": {
+    "match": {
+      "GOOD_NM": "單機身"
+    }
+  }
+}`
 
 To access elasticsearch cluster connect to any docker swarm node to port 9200 using default credentials: `curl http://elastic:changeme@my-es-node.mydomain.com:9200`.
 
