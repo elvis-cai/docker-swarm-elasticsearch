@@ -102,6 +102,15 @@ To change default elasticsearch parameters use environment variables. See https:
 
 * credit ik chinese search to [medcl](https://github.com/medcl/elasticsearch-analysis-ik)
 
+##### update dictionary
+
+  after update the dictionary at the folder plugins/ik/config/custom/zhTW. Need to restart the plugins and [rebuild index](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html) to get effects. Suggest use the [index aliases](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html) to smoothly change the reindex process.
+
+  <blockquote>
+    sudo bin/elasticsearch-plugin remove ik
+    sudo bin/elasticsearch-plugin install ik
+  </blockquote>
+
 ## Elasticsearch Design Priciples
 
 ### It's search engine so keep "approximation" in mind.
