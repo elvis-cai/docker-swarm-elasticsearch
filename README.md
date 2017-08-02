@@ -73,6 +73,10 @@ Since elasticsearch requires vm.max_map_count to be at least 262144 but docker s
 vm.max_map_count on all your nodes to proper value BEFORE starting service.
 On Linux Ubuntu: `sysctl -w "vm.max_map_count=262144"`. Or `echo "vm.max_map_count=262144" >> /etc/sysctl.conf` to set it permanently.
 
+To access elasticsearch cluster connect to any docker swarm node to port 9200 using default credentials: `curl http://elastic:changeme@my-es-node.mydomain.com:9200`.
+
+To change default elasticsearch parameters use environment variables. See https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html for more details.
+
 ## Search Chinese
 
 * run `curl --user elastic:changeme -XPUT "http://192.168.100.20:9200/product" -H 'Content-Type: application/json' -d @./product_mapping.json;echo`
@@ -86,9 +90,31 @@ On Linux Ubuntu: `sysctl -w "vm.max_map_count=262144"`. Or `echo "vm.max_map_cou
     "match": {
       "GOOD_NM": "單機身"
     }
+  },
+  "highlight" : {
+    "pre_tags" : ["<tag1>", "<tag2>"],
+    "post_tags" : ["</tag1>", "</tag2>"],
+    "fields" : {
+        "GOOD_NM" : {}
+    }
   }
 }`
 
-To access elasticsearch cluster connect to any docker swarm node to port 9200 using default credentials: `curl http://elastic:changeme@my-es-node.mydomain.com:9200`.
+* credit ik chinese search to [medcl](https://github.com/medcl/elasticsearch-analysis-ik)
 
-To change default elasticsearch parameters use environment variables. See https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html for more details.
+## Elasticsearch Design Priciples
+
+### It's search engine so keep "approximation" in mind.
+
+It's a search engine not the sql engine. When you "select count(*)", MUST keep in mind "it is approximate". MUST read this article [Document counts are approximate](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-terms-aggregation.html#search-aggregations-bucket-terms-aggregation-approximate-counts) to avoid some stupid error.
+
+### [Modeling Your Data](https://www.elastic.co/guide/en/elasticsearch/guide/master/modeling-your-data.html)
+
+  In SQL world, it is very easy to use statement join. But, in elasticsearch no-sql world, you have to use the following four common techniques to handle relational data:
+
+  - [Application-side joins](https://www.elastic.co/guide/en/elasticsearch/guide/master/application-joins.html)
+  - [Data denormalization](https://www.elastic.co/guide/en/elasticsearch/guide/master/denormalization.html)
+  - [Nested objects](https://www.elastic.co/guide/en/elasticsearch/guide/master/nested-objects.html)
+  - [Parent/child relationships](https://www.elastic.co/guide/en/elasticsearch/guide/master/parent-child.html)
+
+MUST read [Handle relations](https://www.elastic.co/guide/en/elasticsearch/guide/master/relations.html) and [Designing for Scale](https://www.elastic.co/guide/en/elasticsearch/guide/master/scale.html)
