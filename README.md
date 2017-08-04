@@ -84,7 +84,8 @@ To change default elasticsearch parameters use environment variables. See https:
 * run `curl --user elastic:changeme -XPOST "http://192.168.100.20:9200/_bulk" -H 'Content-Type: application/json' --data-binary @./productsData.json;echo`
 
 * in kibana devtool run 
-`GET product/goods/_search
+```
+GET product/goods/_search
 {
   "query": {
     "match": {
@@ -98,7 +99,8 @@ To change default elasticsearch parameters use environment variables. See https:
         "GOOD_NM" : {}
     }
   }
-}`
+}
+```
 
 * credit ik chinese search to [medcl](https://github.com/medcl/elasticsearch-analysis-ik)
 
@@ -106,10 +108,10 @@ To change default elasticsearch parameters use environment variables. See https:
 
   after update the dictionary at the folder plugins/ik/config/custom/zhTW. Need to restart the plugins and [rebuild index](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html) to get effects. Suggest use the [index aliases](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html) to smoothly change the reindex process.
 
-  <blockquote>
-    sudo bin/elasticsearch-plugin remove ik
-    sudo bin/elasticsearch-plugin install ik
-  </blockquote>
+  ```
+  sudo bin/elasticsearch-plugin remove ik
+  sudo bin/elasticsearch-plugin install ik
+  ```
 
 ## Elasticsearch Design Priciples
 
@@ -127,3 +129,73 @@ It's a search engine not the sql engine. When you "select count(*)", MUST keep i
   - [Parent/child relationships](https://www.elastic.co/guide/en/elasticsearch/guide/master/parent-child.html)
 
 MUST read [Handle relations](https://www.elastic.co/guide/en/elasticsearch/guide/master/relations.html) and [Designing for Scale](https://www.elastic.co/guide/en/elasticsearch/guide/master/scale.html)
+
+### Date search in Elasticsearch
+
+  In Elasticsearch, the date format is ISO8601, which is datetime with time zone (yyyy-mm-ddThh:mm:ss.nnnnnn+|-hh:mm) eg. `2017-08-04T10:30:00+08:00`. Elasticsearch provides very useful range search for the date. Must make sure your data mapping format is "date".
+
+  For exmaple:
+  ```
+  PUT test/campaign/1
+  {
+    "campaignID": 1,
+    "startTime": "2017-08-04T10:30:00+08:00",
+    "endTime": "2017-08-05T10:30:00+08:00"
+  }
+  ```
+
+  When you check the mapping `GET test/campaign/_mapping`, you will get
+  ```
+  { 
+    "test": {
+      "mappings": {
+        "campaign": {
+          "properties": {
+            "campaignID": {
+              "type": "long"
+            },
+            "endTime": {
+              "type": "date"
+            },
+            "startTime": {
+              "type": "date"
+            }
+          }
+        }
+      }
+    }
+  }
+  ```
+  
+  You can use the "range" and "bool" to get the current running campaign:
+  For exmaple:
+  ```
+  GET test/campaign/_search
+  {
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "startTime": {
+                "lte": "now" 
+              }
+            }
+          },
+          {
+            "range": {
+              "endTime": {
+                "gte": "now"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+  ```
+
+  The detail information, please reference the 
+
+  - [date math](https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#date-math)
+  - [date range](https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-range-query.html#ranges-on-dates)
