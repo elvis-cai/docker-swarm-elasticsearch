@@ -18,12 +18,19 @@ $script = <<SCRIPT
   yum check-update
   yum makecache fast
 
+  ## Optional: Set timezone
+  ## timedatectl set-timezone Asia/Taipei
+
   ## add docker repo to get correct docker-ce version
   yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
   ## install related packages.
-  yum install -y net-tools git wget curl python-pip telnet vim device-mapper-persistent-data lvm2 docker-ce
+  yum install -y net-tools git wget curl python-pip telnet vim device-mapper-persistent-data lvm2 docker-ce ntp nfs-utils
   
+  ## sync system date time
+  systemctl start ntpd
+  systemctl enable ntpd
+
   ## install docker-compose
   curl -L https://github.com/docker/compose/releases/download/1.14.0/docker-compose-`uname -s`-`uname -m` > /usr/bin/docker-compose
   chmod +x /usr/bin/docker-compose
@@ -62,17 +69,36 @@ $script = <<SCRIPT
     chown -R elasticsearch:elasticsearch /vagrant/data
   fi
   
+  ## install docker plugins
+  ## echo "y" | docker plugin install minio/minfs
+
   ## start docker daemon
   systemctl daemon-reload
   systemctl restart docker
+  systemctl start nfs-server.service
 
   ## Configure Docker to start on boot
   systemctl enable docker
+  systemctl enable nfs-server.service
+
+  ## system status
+  timedatectl status
+  systemctl status docker
+
+  ## nfs data volume
+  mkdir -p /mnt/esdata
 
   ## join docker swarm
   if [ "$(hostname)" == "elastic0" ];then
     docker swarm init --advertise-addr=192.168.100.20
     docker swarm join-token manager -q > /vagrant/token
+
+    ## nfs server
+    mkdir -p /var/esdata
+    chown -R elasticsearch:elasticsearch /var/esdata
+    chmod 755 /var/esdata
+    echo '/var/esdata 192.168.100.0/24(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000)' >> /etc/exports
+    exportfs -a
   fi
   if [ "$(hostname)" == "elastic1" ];then
     docker swarm join --token $(cat /vagrant/token) --advertise-addr=192.168.100.21 192.168.100.20:2377
@@ -80,6 +106,12 @@ $script = <<SCRIPT
   if [ "$(hostname)" == "elastic2" ];then
     docker swarm join --token $(cat /vagrant/token) --advertise-addr=192.168.100.22 192.168.100.20:2377
   fi
+
+  ## nfs client
+  mkdir -p /mnt/esdata
+  mount -t nfs4 192.168.100.20:/var/esdata /mnt/esdata
+  echo '192.168.100.20:/var/esdata /mnt/esdata nfs4 auto 0 0' >> /etc/fstab
+
 SCRIPT
 
 # This defines the version 2 of vagrant
